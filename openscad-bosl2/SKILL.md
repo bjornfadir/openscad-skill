@@ -279,6 +279,7 @@ Render a `.scad` file to a PNG for visual review. Default is a full CGAL render 
 ~/.claude/skills/openscad-bosl2/tools/openscad-render -o /tmp/p.png part.scad         # explicit output path
 ~/.claude/skills/openscad-bosl2/tools/openscad-render --camera 0,0,0,55,0,25,200 part.scad  # specific view
 ~/.claude/skills/openscad-bosl2/tools/openscad-render --view axes,edges part.scad     # show axes + edges
+~/.claude/skills/openscad-bosl2/tools/openscad-render -D 'part="clip"' -o clip.png caddy.scad  # one part of a multi-part file
 ```
 
 Use `--preview` for quick visual sanity-checks on large/heavy files; the default render is slower but matches what slicers will see.
@@ -439,6 +440,7 @@ Read the relevant sub-doc before reaching for a primitive you don't know:
 - **`edge_profile()` and `mask2d_*` need `diff()`** wrapping the parent to actually subtract.
 - **Quadrant order for per-corner rounding** is **counter-clockwise from back-right** (I, II, III, IV). Test with distinct values if unsure.
 - **Mixing `rounding=` and `chamfer=` on the same edge** is not allowed. Pick one per edge.
+- **`offset_sweep()` with `os_chamfer` on thin profiles can trip a CGAL Nef assertion** at full render on OpenSCAD 2021.01. Fall back to `linear_extrude()` for that feature.
 
 ## Skeleton
 

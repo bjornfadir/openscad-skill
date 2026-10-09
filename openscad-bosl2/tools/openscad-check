@@ -6,10 +6,12 @@
 # and other warnings (treated as failures via --hardwarnings).
 #
 # Usage:
-#   openscad-check [--lenient] FILE.scad [FILE.scad ...]
+#   openscad-check [--lenient] [-D NAME=VALUE ...] FILE.scad [FILE.scad ...]
 #
 # Options:
 #   --lenient   Don't fail on warnings (default: warnings are errors).
+#   -D, --define NAME=VALUE
+#               Pass a variable override to OpenSCAD (-D). Repeatable.
 #
 # Env:
 #   OPENSCAD    Path to OpenSCAD binary. If unset, the script searches PATH
@@ -46,15 +48,17 @@ find_openscad() {
 OPENSCAD="$(find_openscad)"
 
 usage() {
-    sed -n '3,21p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '3,23p' "$0" | sed 's/^# \{0,1\}//'
     exit "${1:-2}"
 }
 
 lenient=0
+defines=()
 files=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --lenient) lenient=1; shift ;;
+        -D|--define) defines+=(-D "$2"); shift 2 ;;
         -h|--help) usage 0 ;;
         --) shift; files+=("$@"); break ;;
         -*) echo "openscad-check: unknown option: $1" >&2; usage 2 ;;
@@ -86,7 +90,7 @@ for f in "${files[@]}"; do
         rc=1
         continue
     fi
-    if msg=$("$OPENSCAD" "${flags[@]}" "$f" 2>&1); then
+    if msg=$("$OPENSCAD" "${flags[@]}" "${defines[@]}" "$f" 2>&1); then
         if [[ -n "$msg" ]]; then
             printf '%s: OK (with messages)\n' "$f"
             printf '%s\n' "$msg" | sed 's/^/  /'
